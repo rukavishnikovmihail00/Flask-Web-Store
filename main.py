@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, flash
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required
+from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from cloudipsp import Api, Checkout
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -71,7 +71,7 @@ def login():
 
             next_page = request.args.get('next')
 
-            return redirect(next_page)
+            return redirect('/auth_index')
         else:
             flash('Неверно введена пара логин-пароль')
     else:
@@ -88,13 +88,42 @@ def logout():
 
 @app.route('/')
 def index():
+    if current_user.is_authenticated:
+        items = Item.query.order_by(Item.price).all()
+        return render_template('auth_index.html', data=items)
     items = Item.query.order_by(Item.price).all()
     return render_template('index.html', data=items)
 
 
+@app.route('/profile')
+@login_required
+def profile():
+    user = User.query.get(current_user.get_id())
+    return render_template('profile.html', user=user)
+
+
+
+@app.route('/auth_index')
+def auth_index():
+    if not (current_user.is_authenticated):
+        return render_template('index.html')
+    items = Item.query.order_by(Item.price).all()
+    return render_template('auth_index.html', data=items)
+
+
 @app.route('/about')
 def about():
+    if current_user.is_authenticated:
+        return render_template('about_auth.html')
     return render_template('about.html')
+
+
+@app.route('/about_auth')
+@login_required
+def about_auth():
+    if not (current_user.is_authenticated):
+        return render_template('about.html')
+    return render_template('about_auth.html')
 
 
 
