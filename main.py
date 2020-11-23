@@ -103,7 +103,7 @@ def about():
 def item_buy(id):
     item = Item.query.get(id)
 
-    api = Api(merchant_id=1462245, secret_key='lCams2QwOYyvi2g2JS7X2NHHJAJJMCKF')
+    api = Api(merchant_id='ID', secret_key='SEKRET_KEY')
     checkout = Checkout(api=api)
     data = { "currency": "RUB", "amount": item.price*100 }
     url = checkout.url(data).get('checkout_url')
