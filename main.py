@@ -1,14 +1,16 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, flash
 from flask_sqlalchemy import SQLAlchemy
-
+from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required
 from cloudipsp import Api, Checkout
+from werkzeug.security import check_password_hash, generate_password_hash
 
 
 app = Flask(__name__)
+app.secret_key = 'secretkey'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///shop.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
 db = SQLAlchemy(app)
+manager = LoginManager(app)
 
 
 class Item(db.Model):
@@ -20,6 +22,69 @@ class Item(db.Model):
 
     def __repr__(self):
         return self.title
+
+
+class User(db.Model, UserMixin):
+    id = db.Column(db.Integer, primary_key=True)
+    login = db.Column(db.String(25), nullable=False, unique=True)
+    password = db.Column(db.String(20), nullable=False)
+
+
+@manager.user_loader
+def load_user(user_id):
+    return User.query.get(user_id)
+
+
+@app.route('/register', methods=['POST', 'GET'])
+def register():
+    login = request.form.get('login')
+    password = request.form.get('password')
+    password2 = request.form.get('password2')
+    
+    if request.method == 'POST':
+        if not (login or password or password2):
+            flash('Не все поля заполнены')
+        elif password != password2:
+            flash('Пароли не совпадают')
+        else:
+            hash_pwd = generate_password_hash(password)
+            new_user = User(login=login, password=hash_pwd)
+            db.session.add(new_user)
+            db.session.commit()
+
+            return redirect('/login')
+    
+
+    return render_template('register.html')
+
+
+@app.route('/login', methods=['POST', 'GET'])
+def login():
+    login = request.form.get('login')
+    password = request.form.get('password')
+
+    if login and password:
+        user = User.query.filter_by(login=login).first()
+
+        if user and check_password_hash(user.password, password):
+            login_user(user)
+
+            next_page = request.args.get('next')
+
+            return redirect(next_page)
+        else:
+            flash('Неверно введена пара логин-пароль')
+    else:
+        flash('Не все поля были заполнены')
+    return render_template('login.html')
+
+
+@app.route('/logout', methods=['POST', 'GET'])
+@login_required
+def logout():
+    logout_user()
+    return redirect('/')
+
 
 @app.route('/')
 def index():
@@ -34,6 +99,7 @@ def about():
 
 
 @app.route('/buy/<int:id>')
+@login_required
 def item_buy(id):
     item = Item.query.get(id)
 
@@ -45,6 +111,7 @@ def item_buy(id):
 
 
 @app.route('/create', methods=['POST', 'GET'])
+@login_required
 def create():
     if request.method == "POST":
         title = request.form['title']
@@ -61,6 +128,13 @@ def create():
     else:
         return render_template('create.html')
 
+
+@app.after_request
+def redirect_to_signin(response):
+    if response.status_code == 401:
+        return redirect('/login' + '?next=' + request.url)
+    
+    return response
 
 
 if __name__ == "__main__":
