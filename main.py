@@ -102,7 +102,6 @@ def profile():
     return render_template('profile.html', user=user)
 
 
-
 @app.route('/auth_index')
 def auth_index():
     if not (current_user.is_authenticated):
@@ -124,7 +123,6 @@ def about_auth():
     if not (current_user.is_authenticated):
         return render_template('about.html')
     return render_template('about_auth.html')
-
 
 
 @app.route('/buy/<int:id>')
