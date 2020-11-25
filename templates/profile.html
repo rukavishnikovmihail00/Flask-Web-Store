@@ -33,6 +33,12 @@
   <div class="profile-header-widget__name-wrapper">
     <h1 class="st-h1 profile-header-widget__name">{{ user.name }} {{ user.surname }}</h1>
     <h1 class="st-h1 profile-header-widget__name">{{ user.email }}</h1>
+    <div>
+      {% for item in items %}
+          <p>{{ item.title }}</p>
+          <pre>{{ item.price }}</pre>
+      {% endfor %}
+    </div>
     <div id="ember704" class="user-subscribe-button ember-view"><!---->
 <!----></div>
   </div>

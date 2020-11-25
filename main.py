@@ -7,7 +7,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 app = Flask(__name__)
 app.secret_key = 'secretkey'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///shop2.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///shop3.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 manager = LoginManager(app)
@@ -15,24 +15,23 @@ manager = LoginManager(app)
 
 class Item(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(100), nullable=False)
+    title = db.Column(db.String(80))
     price = db.Column(db.Integer, nullable=False)
     isActive = db.Column(db.Boolean, default=True)
-    text = db.Column(db.Text, nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-
-    def __repr__(self):
-        return self.title
+    text = db.Column(db.Text)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
-    login = db.Column(db.String(25), nullable=False, unique=True)
-    password = db.Column(db.String(20), nullable=False)
-    email = db.Column(db.String(120), unique = True)
+    login = db.Column(db.String(100), index=True, unique=True)
+    password = db.Column(db.String(100), index=True, unique=True)
+    email = db.Column(db.String(120), index=True, unique=True)
     name = db.Column(db.String(20), nullable=False)
     surname = db.Column(db.String(30), nullable=False)
-    item = db.relationship('Item', backref='user')
+    items = db.relationship('Item', backref='author', lazy='dynamic')
+    about = db.Column(db.String(140))
+
 
 
 @manager.user_loader
@@ -98,7 +97,8 @@ def logout():
 def index():
     if current_user.is_authenticated:
         items = Item.query.order_by(Item.price).all()
-        return render_template('auth_index.html', data=items)
+        user = User.query.get(current_user.get_id())
+        return render_template('auth_index.html', data=items, user=user)
     items = Item.query.order_by(Item.price).all()
     return render_template('index.html', data=items)
 
@@ -107,16 +107,36 @@ def index():
 @login_required
 def profile():
     user = User.query.get(current_user.get_id())
-    #items = Item.query.order_by(Item.user_id(user.get_id())) # TODO вывести товары конкретного пользователя
-    return render_template('profile.html', user=user)
+    items = user.items.order_by(Item.price.desc()).all()
+    return render_template('profile.html', user=user, items=items)
+
+
+@app.route('/add/<int:id>', methods=['POST', 'GET'])
+@login_required
+def add(id):
+    if request.method == "POST":
+        title = request.form.get('title')
+        price = request.form.get('price')
+        user = User.query.filter_by(id=id).first()
+            
+        item = Item(title=title, price=price)
+        user.items.append(item)
+        try:
+            db.session.add(item)
+            db.session.commit()
+        except:
+            return "Что-то пошло не так"
+        return redirect('/')
+    return render_template('add.html')
 
 
 @app.route('/auth_index')
 def auth_index():
     if not (current_user.is_authenticated):
         return render_template('index.html')
+    user = User.query.get(current_user.get_id())
     items = Item.query.order_by(Item.price).all()
-    return render_template('auth_index.html', data=items)
+    return render_template('auth_index.html', data=items, user=user)
 
 
 @app.route('/about')
