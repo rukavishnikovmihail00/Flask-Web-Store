@@ -21,8 +21,24 @@
 </div>
 
 <body>
+  <div class="container">
     <h1>Личный кабинет</h1>
-    <h2>{{ user.login }}</h2>
+    <div class="flex-row">
+      <div id="ember701" class="col-xs-12 profile-header-widget ember-view"><span id="ember702" class="profile-header-widget__avatar user-avatar ember-view"><a href="/users/177817501?auth=login" id="ember703" class="user-avatar__link ember-link active ember-view">        <img src="https://stepik.org/users/177817501/76349a91bbf4b515a1490498c67745f7a67b575f/avatar.svg" class="user-avatar__img " style="width: 100px; height: 100px;">
+
+<!---->
+</a></span>
+
+<div class="profile-header-widget__info">
+  <div class="profile-header-widget__name-wrapper">
+    <h1 class="st-h1 profile-header-widget__name">{{ user.name }} {{ user.surname }}</h1>
+    <h1 class="st-h1 profile-header-widget__name">{{ user.email }}</h1>
+    <div id="ember704" class="user-subscribe-button ember-view"><!---->
+<!----></div>
+  </div>
+</div>
+</div>
+    </div>
 </body>
 
 
@@ -64,7 +80,7 @@
     </div>
   </footer>
 </div>
-
+</div>
 
 </body>
 </html>
