@@ -114,6 +114,7 @@ def profile():
 @app.route('/add/<int:id>', methods=['POST', 'GET'])
 @login_required
 def add(id):
+    user = User.query.filter_by(id=id).first()
     if request.method == "POST":
         title = request.form.get('title')
         price = request.form.get('price')
@@ -127,7 +128,7 @@ def add(id):
         except:
             return "Что-то пошло не так"
         return redirect('/')
-    return render_template('add.html')
+    return render_template('add.html', user=user)
 
 
 @app.route('/auth_index')
@@ -142,7 +143,8 @@ def auth_index():
 @app.route('/about')
 def about():
     if current_user.is_authenticated:
-        return render_template('about_auth.html')
+        user = User.query.get(current_user.get_id())
+        return render_template('about_auth.html', user=user)
     return render_template('about.html')
 
 
