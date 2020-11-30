@@ -111,6 +111,16 @@ def profile():
     return render_template('profile.html', user=user, items=items)
 
 
+@app.route('/profile/<int:id>')
+def profile_check(id):
+    user = User.query.get(id)
+    items = user.items.order_by(Item.price.desc()).all()
+    if not (current_user.is_authenticated):
+        return render_template('profile_check.html', user=user, items=items)
+    else:
+        return render_template('profile.html', user=user, items=items)
+
+
 @app.route('/add/<int:id>', methods=['POST', 'GET'])
 @login_required
 def add(id):
