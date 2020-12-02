@@ -25,11 +25,12 @@ class Item(db.Model):
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     login = db.Column(db.String(100), index=True, unique=True)
-    password = db.Column(db.String(100), index=True, unique=True)
+    password = db.Column(db.String(100), index=True)
     email = db.Column(db.String(120), index=True, unique=True)
     name = db.Column(db.String(20), nullable=False)
     surname = db.Column(db.String(30), nullable=False)
     items = db.relationship('Item', backref='author', lazy='dynamic')
+    city = db.Column(db.String(30))
     about = db.Column(db.String(140))
 
 
@@ -128,9 +129,10 @@ def add(id):
     if request.method == "POST":
         title = request.form.get('title')
         price = request.form.get('price')
+        text = request.form.get('text')
         user = User.query.filter_by(id=id).first()
             
-        item = Item(title=title, price=price)
+        item = Item(title=title, price=price, text=text)
         user.items.append(item)
         try:
             db.session.add(item)
@@ -167,15 +169,10 @@ def about_auth():
 
 
 @app.route('/buy/<int:id>')
-@login_required
 def item_buy(id):
     item = Item.query.get(id)
-
-    api = Api(merchant_id='ID', secret_key='SEKRET_KEY')
-    checkout = Checkout(api=api)
-    data = { "currency": "RUB", "amount": item.price*100 }
-    url = checkout.url(data).get('checkout_url')
-    return redirect(url)
+    user_id = item.user_id
+    return redirect('/profile/' + str(user_id))
 
 
 @app.route('/create', methods=['POST', 'GET'])
