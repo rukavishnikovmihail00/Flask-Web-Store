@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, flash
+from flask import Flask, render_template, request, redirect, flash, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from cloudipsp import Api, Checkout
@@ -94,8 +94,10 @@ def logout():
     return redirect('/')
 
 
-@app.route('/')
+@app.route('/', methods=['POST', 'GET'])
 def index():
+    if request.method == "POST":
+        return redirect("/search")
     if current_user.is_authenticated:
         items = Item.query.order_by(Item.price).all()
         user = User.query.get(current_user.get_id())
@@ -143,8 +145,10 @@ def add(id):
     return render_template('add.html', user=user)
 
 
-@app.route('/auth_index')
+@app.route('/auth_index', methods=['POST', 'GET'])
 def auth_index():
+    if request.method == "POST":
+        return redirect("/search")
     if not (current_user.is_authenticated):
         return render_template('index.html')
     user = User.query.get(current_user.get_id())

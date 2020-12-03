@@ -5,6 +5,20 @@
 {% endblock %}
 
 {% block body %}
+<!----------------------------------------->
+<form method="POST">
+  <div class="search-wrapper">
+      <div class="input-holder">
+          <input type="text" class="search-input" placeholder="Поиск по сайту" />
+          <button class="search-icon" onclick="searchToggle(this, event);"><span></span></button>
+      </div>
+      <span class="close" onclick="searchToggle(this, event);"></span>
+      <div class="result-container">
+
+      </div>
+  </div>
+</form>
+<!----------------------------------------->
 <div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
     <h1 class="display-4">Популярные товары</h1>
    </div>
@@ -19,7 +33,7 @@
       <div class="card-body">
         <h1 class="card-title pricing-card-title">{{ el.price }} <small class="text-muted">руб.</small></h1>
         <ul class="list-unstyled mt-3 mb-4">
-          <li>{{ el.text }}</li>
+          <li>Some text</li>
           <li>2 GB of storage</li>
           <li>Email support</li>
           <li></li>
