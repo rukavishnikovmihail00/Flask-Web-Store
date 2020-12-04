@@ -97,7 +97,8 @@ def logout():
 @app.route('/', methods=['POST', 'GET'])
 def index():
     if request.method == "POST":
-        return redirect("/search")
+        find = request.form['find']
+        return redirect("/search/" + str(find))
     if current_user.is_authenticated:
         items = Item.query.order_by(Item.price).all()
         user = User.query.get(current_user.get_id())
@@ -128,6 +129,9 @@ def profile_check(id):
 @login_required
 def add(id):
     user = User.query.filter_by(id=id).first()
+    user_check = User.query.get(current_user.get_id())
+    if user.login != user_check.login:
+        return redirect("/")
     if request.method == "POST":
         title = request.form.get('title')
         price = request.form.get('price')
@@ -148,7 +152,8 @@ def add(id):
 @app.route('/auth_index', methods=['POST', 'GET'])
 def auth_index():
     if request.method == "POST":
-        return redirect("/search")
+        find = request.form['find']
+        return redirect("/search/" + str(find))
     if not (current_user.is_authenticated):
         return render_template('index.html')
     user = User.query.get(current_user.get_id())
@@ -162,6 +167,17 @@ def about():
         user = User.query.get(current_user.get_id())
         return render_template('about_auth.html', user=user)
     return render_template('about.html')
+
+
+@app.route('/search/<find>')
+def search(find):
+    items = Item.query.filter_by(title='find').all()
+    if current_user.is_authenticated:
+        user = User.query.get(current_user.get_id())
+        return render_template('search.html', user=user, items=items)
+    else:
+        return render_template('search.html', items=items)
+    
 
 
 @app.route('/about_auth')
@@ -179,7 +195,7 @@ def item_buy(id):
     return redirect('/profile/' + str(user_id))
 
 
-@app.route('/create', methods=['POST', 'GET'])
+"""@app.route('/create', methods=['POST', 'GET'])
 @login_required
 def create():
     if request.method == "POST":
@@ -196,7 +212,7 @@ def create():
             return "Ошибка добавления товара. Попробуйте снова"
     else:
         return render_template('create.html')
-
+"""
 
 @app.after_request
 def redirect_to_signin(response):

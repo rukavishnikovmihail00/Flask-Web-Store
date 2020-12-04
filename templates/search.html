@@ -1,0 +1,16 @@
+{% if not current_user.is_authenticated %}
+{% extends 'base.html' %}
+{% endif %}
+
+{% if current_user.is_authenticated %}
+{% extends 'base_auth.html' %}
+{% endif %}
+
+
+{% block title %}
+<title>Поиск</title>
+{% endblock %}
+
+{% block body %}
+<h3>Результаты поиска</h3>
+{% endblock %}
